@@ -4,7 +4,7 @@ import { ContentCard } from "../components/common/ContentCard";
 import { ContentDetailModal } from "../components/common/ContentDetailModal";
 import { FilterPanel } from "../components/filters/FilterPanel";
 import { useContentFilter } from "../hooks/useContentFilter";
-import { mockContents } from "../data/mockContents";
+import { useTMDb } from "../hooks/useTMDb";
 
 interface HomePageProps {
   searchQuery: string;
@@ -13,6 +13,7 @@ interface HomePageProps {
 
 export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const { contents, isLoading, error } = useTMDb();
 
   const {
     filters,
@@ -21,21 +22,20 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
     toggleOtt,
     toggleGenre,
     toggleCountry,
-    toggleMood,
     toggleContentType,
     setSortBy,
     resetFilters,
-  } = useContentFilter(mockContents);
+  } = useContentFilter(contents);
 
   // searchQuery를 외부(Header)에서도 받아서 동기화
-  const displayContents = filteredContents.filter((c) => {
+  const displayContents = filteredContents.filter((c: Content) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
       c.title.toLowerCase().includes(q) ||
       c.originalTitle?.toLowerCase().includes(q) ||
       c.description.toLowerCase().includes(q) ||
-      c.cast?.some((a) => a.toLowerCase().includes(q)) ||
+      c.cast?.some((a: string) => a.toLowerCase().includes(q)) ||
       c.director?.toLowerCase().includes(q)
     );
   });
@@ -57,7 +57,9 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
           <div className="flex items-center justify-center gap-6 text-sm text-[var(--color-text-tertiary)]">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span>{mockContents.length}개 콘텐츠</span>
+              <span>
+                {isLoading ? "불러오는 중..." : `${contents.length}개 콘텐츠`}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-base">🎬</span>
@@ -66,6 +68,13 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
           </div>
         </div>
       </section>
+
+      {/* 에러 표시 */}
+      {error && (
+        <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm text-center">
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* 메인 콘텐츠 영역 */}
       <div className="flex gap-8">
@@ -76,7 +85,6 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
           onToggleOtt={toggleOtt}
           onToggleGenre={toggleGenre}
           onToggleCountry={toggleCountry}
-          onToggleMood={toggleMood}
           onToggleContentType={toggleContentType}
           onSortChange={setSortBy}
           onReset={() => {
@@ -100,10 +108,20 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
             </p>
           </div>
 
-          {/* 그리드 */}
-          {displayContents.length > 0 ? (
+          {/* 로딩 스켈레톤 */}
+          {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
-              {displayContents.map((content) => (
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[2/3] rounded-2xl bg-[var(--color-surface)] mb-3" />
+                  <div className="h-4 bg-[var(--color-surface)] rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-[var(--color-surface)] rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : displayContents.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
+              {displayContents.map((content: Content) => (
                 <ContentCard
                   key={content.id}
                   content={content}

@@ -3,7 +3,6 @@ import type {
   OttPlatform,
   Genre,
   Country,
-  Mood,
   ContentType,
   SortOption,
   FilterState,
@@ -14,8 +13,6 @@ import {
   GENRE_LABELS,
   COUNTRY_LABELS,
   COUNTRY_FLAGS,
-  MOOD_LABELS,
-  MOOD_EMOJIS,
   CONTENT_TYPE_LABELS,
   SORT_LABELS,
 } from "../../types";
@@ -26,7 +23,7 @@ interface FilterPanelProps {
   onToggleOtt: (ott: OttPlatform) => void;
   onToggleGenre: (genre: Genre) => void;
   onToggleCountry: (country: Country) => void;
-  onToggleMood: (mood: Mood) => void;
+
   onToggleContentType: (type: ContentType) => void;
   onSortChange: (sort: SortOption) => void;
   onReset: () => void;
@@ -55,16 +52,7 @@ const ALL_GENRES: Genre[] = [
   "mystery",
 ];
 const ALL_COUNTRIES: Country[] = ["kr", "us", "jp", "gb", "fr", "es", "de"];
-const ALL_MOODS: Mood[] = [
-  "touching",
-  "thrilling",
-  "light",
-  "immersive",
-  "healing",
-  "heartpounding",
-  "dark",
-  "funny",
-];
+
 const ALL_CONTENT_TYPES: ContentType[] = [
   "movie",
   "drama",
@@ -79,7 +67,7 @@ export function FilterPanel({
   onToggleOtt,
   onToggleGenre,
   onToggleCountry,
-  onToggleMood,
+
   onToggleContentType,
   onSortChange,
   onReset,
@@ -91,7 +79,7 @@ export function FilterPanel({
     ott: true,
     genre: true,
     country: false,
-    mood: false,
+
     type: false,
   });
 
@@ -198,26 +186,6 @@ export function FilterPanel({
               className={`chip ${filters.selectedCountries.includes(country) ? "chip-active" : "chip-default"}`}
             >
               {COUNTRY_FLAGS[country]} {COUNTRY_LABELS[country]}
-            </button>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* 분위기 */}
-      <FilterSection
-        title="분위기"
-        icon="✨"
-        isExpanded={expandedSections.mood}
-        onToggle={() => toggleSection("mood")}
-      >
-        <div className="flex flex-wrap gap-2">
-          {ALL_MOODS.map((mood) => (
-            <button
-              key={mood}
-              onClick={() => onToggleMood(mood)}
-              className={`chip ${filters.selectedMoods.includes(mood) ? "chip-active" : "chip-default"}`}
-            >
-              {MOOD_EMOJIS[mood]} {MOOD_LABELS[mood]}
             </button>
           ))}
         </div>
