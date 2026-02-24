@@ -142,8 +142,8 @@ export const SORT_LABELS: Record<SortOption, string> = {
 // 콘텐츠 인터페이스
 export interface Content {
   id: string;
-  tmdbId: number;
-  mediaType: "movie" | "tv";
+  tmdbId?: number;
+  mediaType?: "movie" | "tv";
   title: string;
   originalTitle?: string;
   posterUrl: string;
