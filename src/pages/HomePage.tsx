@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Content } from "../types";
 import { ContentCard } from "../components/common/ContentCard";
 import { ContentDetailModal } from "../components/common/ContentDetailModal";
+import { RandomPickModal } from "../components/common/RandomPickModal";
 import { FilterPanel } from "../components/filters/FilterPanel";
 import { useContentFilter } from "../hooks/useContentFilter";
 import { useTMDb } from "../hooks/useTMDb";
@@ -13,6 +14,7 @@ interface HomePageProps {
 
 export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [showRandomPick, setShowRandomPick] = useState(false);
   const { contents, isLoading, error } = useTMDb();
 
   const {
@@ -54,6 +56,30 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
             <br className="hidden sm:inline" />
             한곳에서 필터링하고 추천받으세요.
           </p>
+
+          {/* 랜덤 추천 CTA 버튼 */}
+          <button
+            onClick={() => setShowRandomPick(true)}
+            disabled={isLoading || displayContents.length === 0}
+            className="group relative inline-flex items-center gap-2 px-8 py-3.5 mb-6
+                       rounded-2xl text-white font-bold text-base
+                       bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500
+                       hover:shadow-xl hover:shadow-primary-500/30
+                       hover:scale-105 active:scale-95
+                       transition-all duration-300
+                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            <span className="text-xl group-hover:animate-bounce">🎲</span>
+            <span>랜덤 추천받기</span>
+            <span
+              className="absolute -top-2 -right-2 flex items-center justify-center
+                         w-6 h-6 rounded-full text-[10px] font-bold
+                         bg-yellow-400 text-black shadow-md"
+            >
+              {displayContents.length}
+            </span>
+          </button>
+
           <div className="flex items-center justify-center gap-6 text-sm text-[var(--color-text-tertiary)]">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -159,6 +185,14 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
         <ContentDetailModal
           content={selectedContent}
           onClose={() => setSelectedContent(null)}
+        />
+      )}
+
+      {/* 랜덤 추천 모달 */}
+      {showRandomPick && displayContents.length > 0 && (
+        <RandomPickModal
+          candidates={displayContents}
+          onClose={() => setShowRandomPick(false)}
         />
       )}
     </>
