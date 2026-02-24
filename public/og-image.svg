@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1025"/>
+      <stop offset="50%" style="stop-color:#2d1b4e"/>
+      <stop offset="100%" style="stop-color:#1a1025"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A78BFA"/>
+      <stop offset="100%" style="stop-color:#F472B6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="150" cy="100" r="200" fill="#7C3AED" opacity="0.08"/>
+  <circle cx="1050" cy="530" r="250" fill="#EC4899" opacity="0.06"/>
+  <circle cx="900" cy="80" r="120" fill="#A78BFA" opacity="0.05"/>
+  
+  <!-- Film strip left -->
+  <rect x="60" y="180" width="40" height="270" rx="4" fill="white" opacity="0.05"/>
+  <rect x="68" y="195" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="225" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="255" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="285" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="315" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="345" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="375" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="68" y="405" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  
+  <!-- Film strip right -->
+  <rect x="1100" y="180" width="40" height="270" rx="4" fill="white" opacity="0.05"/>
+  <rect x="1108" y="195" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="225" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="255" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="285" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="315" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="345" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="375" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  <rect x="1108" y="405" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
+  
+  <!-- Play icon -->
+  <g transform="translate(480, 200)">
+    <rect width="64" height="64" rx="14" fill="url(#accent)" opacity="0.9"/>
+    <polygon points="24,18 24,46 48,32" fill="white"/>
+  </g>
+  
+  <!-- Main title -->
+  <text x="560" y="250" font-family="Arial, sans-serif" font-weight="900" font-size="72" fill="white">bomPick</text>
+  
+  <!-- Accent line -->
+  <rect x="440" y="280" width="320" height="3" rx="2" fill="url(#accent)" opacity="0.7"/>
+  
+  <!-- Subtitle -->
+  <text x="600" y="340" font-family="Arial, sans-serif" font-weight="400" font-size="36" fill="#A78BFA" text-anchor="middle">오늘 뭐 볼까?</text>
+  
+  <!-- Description -->
+  <text x="600" y="395" font-family="Arial, sans-serif" font-weight="300" font-size="22" fill="white" opacity="0.6" text-anchor="middle">OTT 콘텐츠 추천 서비스</text>
+  
+  <!-- OTT badges -->
+  <g transform="translate(340, 430)">
+    <rect x="0" y="0" width="90" height="32" rx="16" fill="#E50914" opacity="0.8"/>
+    <text x="45" y="21" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">Netflix</text>
+    
+    <rect x="105" y="0" width="90" height="32" rx="16" fill="#113CCF" opacity="0.8"/>
+    <text x="150" y="21" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">Disney+</text>
+    
+    <rect x="210" y="0" width="90" height="32" rx="16" fill="#FF0558" opacity="0.8"/>
+    <text x="255" y="21" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">TVING</text>
+    
+    <rect x="315" y="0" width="90" height="32" rx="16" fill="#1B1B4B" opacity="0.8"/>
+    <text x="360" y="21" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">Wavve</text>
+    
+    <rect x="420" y="0" width="90" height="32" rx="16" fill="#FF5A2D" opacity="0.8"/>
+    <text x="465" y="21" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">Coupang</text>
+  </g>
+  
+  <!-- URL -->
+  <text x="600" y="530" font-family="Arial, sans-serif" font-weight="400" font-size="18" fill="white" opacity="0.35" text-anchor="middle">bompick.yyyerin.co.kr</text>
+</svg>
