@@ -5,7 +5,6 @@ import type {
   OttPlatform,
   Genre,
   Country,
-  Mood,
   ContentType,
   SortOption,
 } from "../types";
@@ -41,15 +40,6 @@ export function useContentFilter(contents: Content[]) {
     }));
   }, []);
 
-  const toggleMood = useCallback((mood: Mood) => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedMoods: prev.selectedMoods.includes(mood)
-        ? prev.selectedMoods.filter((m) => m !== mood)
-        : [...prev.selectedMoods, mood],
-    }));
-  }, []);
-
   const toggleContentType = useCallback((type: ContentType) => {
     setFilters((prev) => ({
       ...prev,
@@ -76,7 +66,6 @@ export function useContentFilter(contents: Content[]) {
       filters.selectedOtt.length +
       filters.selectedGenres.length +
       filters.selectedCountries.length +
-      filters.selectedMoods.length +
       filters.selectedContentTypes.length
     );
   }, [filters]);
@@ -118,13 +107,6 @@ export function useContentFilter(contents: Content[]) {
       );
     }
 
-    // 분위기 필터
-    if (filters.selectedMoods.length > 0) {
-      result = result.filter((c) =>
-        filters.selectedMoods.some((mood) => c.moods.includes(mood)),
-      );
-    }
-
     // 콘텐츠 유형 필터
     if (filters.selectedContentTypes.length > 0) {
       result = result.filter((c) =>
@@ -155,7 +137,6 @@ export function useContentFilter(contents: Content[]) {
     toggleOtt,
     toggleGenre,
     toggleCountry,
-    toggleMood,
     toggleContentType,
     setSortBy,
     setSearchQuery,

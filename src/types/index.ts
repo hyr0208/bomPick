@@ -142,6 +142,8 @@ export const SORT_LABELS: Record<SortOption, string> = {
 // 콘텐츠 인터페이스
 export interface Content {
   id: string;
+  tmdbId: number;
+  mediaType: "movie" | "tv";
   title: string;
   originalTitle?: string;
   posterUrl: string;
@@ -152,13 +154,12 @@ export interface Content {
   ottPlatforms: OttPlatform[];
   genres: Genre[];
   country: Country;
-  moods: Mood[];
   contentType: ContentType;
   director?: string;
   cast?: string[];
   runtime?: number; // 분 단위 (영화)
   episodes?: number; // 에피소드 수 (드라마)
-  popularity: number; // 인기도 점수 (0~100)
+  popularity: number; // 인기도 점수
 }
 
 // 필터 상태
@@ -166,7 +167,6 @@ export interface FilterState {
   selectedOtt: OttPlatform[];
   selectedGenres: Genre[];
   selectedCountries: Country[];
-  selectedMoods: Mood[];
   selectedContentTypes: ContentType[];
   sortBy: SortOption;
   searchQuery: string;
@@ -176,7 +176,6 @@ export const initialFilterState: FilterState = {
   selectedOtt: [],
   selectedGenres: [],
   selectedCountries: [],
-  selectedMoods: [],
   selectedContentTypes: [],
   sortBy: "popularity",
   searchQuery: "",
