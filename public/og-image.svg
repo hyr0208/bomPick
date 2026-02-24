@@ -46,22 +46,22 @@
   <rect x="1108" y="405" width="24" height="16" rx="2" fill="white" opacity="0.08"/>
   
   <!-- Play icon -->
-  <g transform="translate(480, 200)">
+  <g transform="translate(568, 168)">
     <rect width="64" height="64" rx="14" fill="url(#accent)" opacity="0.9"/>
     <polygon points="24,18 24,46 48,32" fill="white"/>
   </g>
   
   <!-- Main title -->
-  <text x="560" y="250" font-family="Arial, sans-serif" font-weight="900" font-size="72" fill="white">bomPick</text>
+  <text x="600" y="280" font-family="Arial, sans-serif" font-weight="900" font-size="72" fill="white" text-anchor="middle">bomPick</text>
   
   <!-- Accent line -->
-  <rect x="440" y="280" width="320" height="3" rx="2" fill="url(#accent)" opacity="0.7"/>
+  <rect x="440" y="295" width="320" height="3" rx="2" fill="url(#accent)" opacity="0.7"/>
   
   <!-- Subtitle -->
-  <text x="600" y="340" font-family="Arial, sans-serif" font-weight="400" font-size="36" fill="#A78BFA" text-anchor="middle">오늘 뭐 볼까?</text>
+  <text x="600" y="350" font-family="Arial, sans-serif" font-weight="400" font-size="36" fill="#A78BFA" text-anchor="middle">오늘 뭐 볼까?</text>
   
   <!-- Description -->
-  <text x="600" y="395" font-family="Arial, sans-serif" font-weight="300" font-size="22" fill="white" opacity="0.6" text-anchor="middle">OTT 콘텐츠 추천 서비스</text>
+  <text x="600" y="400" font-family="Arial, sans-serif" font-weight="300" font-size="22" fill="white" opacity="0.6" text-anchor="middle">OTT 콘텐츠 추천 서비스</text>
   
   <!-- OTT badges -->
   <g transform="translate(340, 430)">
