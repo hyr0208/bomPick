@@ -109,16 +109,17 @@ const KR_PROVIDER_IDS = "8|337|97|356|1796|2039"; // Netflix, Disney+, Watcha, W
 
 /**
  * 한국 OTT에서 볼 수 있는 영화 (Discover API)
- * watch_region=KR + with_watch_providers 로 실제 한국 OTT 콘텐츠만 가져옴
+ * providerId를 지정하면 특정 OTT 플랫폼의 콘텐츠만 가져옴
  */
 export async function discoverMovies(
   page = 1,
+  providerId?: string,
 ): Promise<TMDbListResponse<TMDbMovie>> {
   return fetchJson(
     buildUrl("/discover/movie", {
       page: String(page),
       watch_region: "KR",
-      with_watch_providers: KR_PROVIDER_IDS,
+      with_watch_providers: providerId || KR_PROVIDER_IDS,
       with_watch_monetization_types: "flatrate",
       sort_by: "popularity.desc",
     }),
@@ -128,12 +129,15 @@ export async function discoverMovies(
 /**
  * 한국 OTT에서 볼 수 있는 TV (Discover API)
  */
-export async function discoverTV(page = 1): Promise<TMDbListResponse<TMDbTV>> {
+export async function discoverTV(
+  page = 1,
+  providerId?: string,
+): Promise<TMDbListResponse<TMDbTV>> {
   return fetchJson(
     buildUrl("/discover/tv", {
       page: String(page),
       watch_region: "KR",
-      with_watch_providers: KR_PROVIDER_IDS,
+      with_watch_providers: providerId || KR_PROVIDER_IDS,
       with_watch_monetization_types: "flatrate",
       sort_by: "popularity.desc",
     }),
