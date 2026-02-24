@@ -20,6 +20,14 @@ export function RandomPickModal({ candidates, onClose }: RandomPickModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pickedContent, setPickedContent] = useState<Content | null>(null);
 
+  // 모달 열릴 때 배경 스크롤 잠금
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   // 최종 결과를 미리 결정
   const finalPick = useCallback(() => {
     const idx = Math.floor(Math.random() * candidates.length);
@@ -86,7 +94,7 @@ export function RandomPickModal({ candidates, onClose }: RandomPickModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center px-6 py-10 sm:p-8"
       onClick={onClose}
     >
       {/* 오버레이 */}
@@ -94,49 +102,53 @@ export function RandomPickModal({ candidates, onClose }: RandomPickModalProps) {
 
       {/* 모달 컨테이너 */}
       <div
-        className="relative w-full max-w-md animate-scale-in"
+        className="relative w-full max-w-sm sm:max-w-md animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 닫기 */}
-        <button
-          onClick={onClose}
-          className="absolute -top-2 -right-2 z-20 p-2 rounded-full
-                     bg-[var(--color-surface)] border border-[var(--color-border)]
-                     text-[var(--color-text-secondary)] hover:text-[var(--color-text)]
-                     shadow-lg transition-colors"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-
-        {/* 스피닝 상태 — 상단 타이틀 */}
-        {phase === "spinning" && (
-          <div className="text-center mb-6 animate-pulse">
-            <div className="text-4xl mb-2">🎰</div>
-            <p className="text-white font-bold text-lg">
-              추천 콘텐츠를 고르는 중...
-            </p>
+        {/* 상단 타이틀 + 닫기 버튼 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1" />
+          <div className="text-center">
+            {phase === "spinning" ? (
+              <div className="animate-pulse">
+                <div className="text-3xl mb-1">🎰</div>
+                <p className="text-white font-bold text-base">
+                  추천 콘텐츠를 고르는 중...
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="text-3xl mb-1">🎬</div>
+                <p className="text-white font-bold text-base">
+                  오늘은 이거 어때요?
+                </p>
+              </>
+            )}
           </div>
-        )}
-
-        {/* 결과 상태 — 상단 타이틀 */}
-        {phase === "result" && (
-          <div className="text-center mb-6">
-            <div className="text-4xl mb-2">🎬</div>
-            <p className="text-white font-bold text-lg">오늘은 이거 어때요?</p>
+          <div className="flex-1 flex justify-end">
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full
+                         bg-white/10 backdrop-blur-sm
+                         text-white/80 hover:text-white hover:bg-white/20
+                         transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-        )}
+        </div>
 
         {/* 카드 */}
         <div
@@ -148,7 +160,7 @@ export function RandomPickModal({ candidates, onClose }: RandomPickModalProps) {
                       }`}
         >
           {/* 포스터 */}
-          <div className="relative aspect-[2/3] max-h-[50vh] overflow-hidden">
+          <div className="relative h-[40vh] min-h-[200px] overflow-hidden">
             <img
               src={displayContent.posterUrl}
               alt={displayContent.title}
