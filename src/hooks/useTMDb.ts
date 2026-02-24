@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import type { Content } from "../types";
 import {
-  fetchTrending,
-  fetchPopularMovies,
-  fetchPopularTV,
+  discoverMovies,
+  discoverTV,
   fetchWatchProviders,
 } from "../services/tmdb";
 import type { TMDbTrendingItem } from "../services/tmdb";
@@ -20,7 +19,7 @@ interface UseTMDbReturn {
 }
 
 /**
- * TMDb API에서 트렌딩 + 인기 콘텐츠를 가져오는 훅.
+ * TMDb Discover API로 한국 OTT에서 실제 볼 수 있는 콘텐츠를 가져오는 훅.
  * 각 콘텐츠의 한국 OTT 정보도 함께 가져옴.
  */
 export function useTMDb(): UseTMDbReturn {
@@ -36,11 +35,12 @@ export function useTMDb(): UseTMDbReturn {
         setIsLoading(true);
         setError(null);
 
-        // 1) 트렌딩 + 인기 영화 + 인기 TV 동시 호출
-        const [trendingRes, moviesRes, tvRes] = await Promise.all([
-          fetchTrending(),
-          fetchPopularMovies(),
-          fetchPopularTV(),
+        // 1) 한국 OTT에서 볼 수 있는 영화 + TV 동시 호출 (2페이지씩)
+        const [moviesP1, moviesP2, tvP1, tvP2] = await Promise.all([
+          discoverMovies(1),
+          discoverMovies(2),
+          discoverTV(1),
+          discoverTV(2),
         ]);
 
         if (cancelled) return;
@@ -52,21 +52,8 @@ export function useTMDb(): UseTMDbReturn {
           mediaType: "movie" | "tv";
         }> = [];
 
-        // 트렌딩 (movie/tv만)
-        trendingRes.results
-          .filter(
-            (item) => item.media_type === "movie" || item.media_type === "tv",
-          )
-          .forEach((item) => {
-            const key = `${item.media_type}-${item.id}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              allItems.push({ item, mediaType: item.media_type });
-            }
-          });
-
-        // 인기 영화
-        moviesRes.results.forEach((movie) => {
+        // 영화 추가
+        [...moviesP1.results, ...moviesP2.results].forEach((movie) => {
           const key = `movie-${movie.id}`;
           if (!seen.has(key)) {
             seen.add(key);
@@ -77,8 +64,8 @@ export function useTMDb(): UseTMDbReturn {
           }
         });
 
-        // 인기 TV
-        tvRes.results.forEach((tv) => {
+        // TV 추가
+        [...tvP1.results, ...tvP2.results].forEach((tv) => {
           const key = `tv-${tv.id}`;
           if (!seen.has(key)) {
             seen.add(key);
@@ -94,10 +81,9 @@ export function useTMDb(): UseTMDbReturn {
           }
         });
 
-        // 3) Watch Provider 병렬 fetch (최대 40개)
-        const topItems = allItems.slice(0, 40);
+        // 3) Watch Provider 병렬 fetch (각 콘텐츠가 어떤 OTT에 있는지)
         const providerResults = await Promise.allSettled(
-          topItems.map(({ item, mediaType }) =>
+          allItems.map(({ item, mediaType }) =>
             fetchWatchProviders(item.id, mediaType),
           ),
         );
@@ -105,7 +91,7 @@ export function useTMDb(): UseTMDbReturn {
         if (cancelled) return;
 
         // 4) Content[]로 변환
-        const transformed: Content[] = topItems.map(
+        const transformed: Content[] = allItems.map(
           ({ item, mediaType }, index) => {
             const providerResult = providerResults[index];
             const providers =
@@ -121,7 +107,7 @@ export function useTMDb(): UseTMDbReturn {
           },
         );
 
-        // OTT가 있는 콘텐츠를 우선 정렬
+        // OTT가 있는 콘텐츠를 우선 정렬, 그 다음 인기도순
         transformed.sort((a, b) => {
           if (a.ottPlatforms.length > 0 && b.ottPlatforms.length === 0)
             return -1;

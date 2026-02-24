@@ -104,28 +104,39 @@ export interface TMDbTVDetail extends TMDbTV {
 
 // ---------- API 호출 함수 ----------
 
-/** 주간 트렌딩 콘텐츠 */
-export async function fetchTrending(
-  page = 1,
-): Promise<TMDbListResponse<TMDbTrendingItem>> {
-  return fetchJson(buildUrl("/trending/all/week", { page: String(page) }));
-}
+/** 한국 OTT Provider ID 목록 (|로 구분 = OR 조건) */
+const KR_PROVIDER_IDS = "8|337|97|356|1796|2039"; // Netflix, Disney+, Watcha, Wavve, Tving, Coupang
 
-/** 인기 영화 */
-export async function fetchPopularMovies(
+/**
+ * 한국 OTT에서 볼 수 있는 영화 (Discover API)
+ * watch_region=KR + with_watch_providers 로 실제 한국 OTT 콘텐츠만 가져옴
+ */
+export async function discoverMovies(
   page = 1,
 ): Promise<TMDbListResponse<TMDbMovie>> {
   return fetchJson(
-    buildUrl("/movie/popular", { page: String(page), region: "KR" }),
+    buildUrl("/discover/movie", {
+      page: String(page),
+      watch_region: "KR",
+      with_watch_providers: KR_PROVIDER_IDS,
+      with_watch_monetization_types: "flatrate",
+      sort_by: "popularity.desc",
+    }),
   );
 }
 
-/** 인기 TV 프로그램 */
-export async function fetchPopularTV(
-  page = 1,
-): Promise<TMDbListResponse<TMDbTV>> {
+/**
+ * 한국 OTT에서 볼 수 있는 TV (Discover API)
+ */
+export async function discoverTV(page = 1): Promise<TMDbListResponse<TMDbTV>> {
   return fetchJson(
-    buildUrl("/tv/popular", { page: String(page), watch_region: "KR" }),
+    buildUrl("/discover/tv", {
+      page: String(page),
+      watch_region: "KR",
+      with_watch_providers: KR_PROVIDER_IDS,
+      with_watch_monetization_types: "flatrate",
+      sort_by: "popularity.desc",
+    }),
   );
 }
 
@@ -135,16 +146,6 @@ export async function fetchWatchProviders(
   mediaType: "movie" | "tv",
 ): Promise<TMDbWatchProviders> {
   return fetchJson(buildUrl(`/${mediaType}/${id}/watch/providers`));
-}
-
-/** 영화 상세 정보 + credits */
-export async function fetchMovieDetail(id: number): Promise<TMDbMovieDetail> {
-  return fetchJson(buildUrl(`/movie/${id}`, { append_to_response: "credits" }));
-}
-
-/** TV 상세 정보 + credits */
-export async function fetchTVDetail(id: number): Promise<TMDbTVDetail> {
-  return fetchJson(buildUrl(`/tv/${id}`, { append_to_response: "credits" }));
 }
 
 /** 통합 검색 */
