@@ -22,13 +22,43 @@ export function Header({
         <div className="flex items-center justify-between h-16 gap-4">
           {/* 로고 */}
           <a href="/" className="flex-shrink-0 flex items-center gap-2 group">
-            <div
-              className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-purple-500
-                            flex items-center justify-center text-white font-bold text-sm
-                            group-hover:scale-110 transition-transform duration-300"
+            <svg
+              className="w-8 h-8 group-hover:scale-110 transition-transform duration-300"
+              viewBox="0 0 512 512"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              B
-            </div>
+              <defs>
+                <linearGradient
+                  id="header-logo-bg"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" style={{ stopColor: "#7C3AED" }} />
+                  <stop offset="100%" style={{ stopColor: "#EC4899" }} />
+                </linearGradient>
+              </defs>
+              <rect
+                width="512"
+                height="512"
+                rx="96"
+                fill="url(#header-logo-bg)"
+              />
+              <polygon
+                points="200,140 200,372 380,256"
+                fill="white"
+                opacity={0.95}
+              />
+              <path
+                d="M260 300 L300 340 L370 230"
+                stroke="#7C3AED"
+                strokeWidth="32"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </svg>
             <span className="text-xl font-extrabold gradient-text hidden sm:inline">
               bomPick
             </span>
