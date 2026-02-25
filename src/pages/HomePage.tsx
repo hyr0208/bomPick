@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Content } from "../types";
 import { ContentCard } from "../components/common/ContentCard";
 import { ContentDetailModal } from "../components/common/ContentDetailModal";
 import { RandomPickModal } from "../components/common/RandomPickModal";
 import { FilterPanel } from "../components/filters/FilterPanel";
 import { useContentFilter } from "../hooks/useContentFilter";
+import { usePagination } from "../hooks/usePagination";
 import { useTMDb } from "../hooks/useTMDb";
 
 interface HomePageProps {
@@ -15,7 +16,7 @@ interface HomePageProps {
 export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [showRandomPick, setShowRandomPick] = useState(false);
-  const { contents, isLoading, error } = useTMDb();
+  const { contents, isLoading, isLoadingMore, error } = useTMDb();
 
   const {
     filters,
@@ -30,17 +31,30 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
   } = useContentFilter(contents);
 
   // searchQuery를 외부(Header)에서도 받아서 동기화
-  const displayContents = filteredContents.filter((c: Content) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    return (
-      c.title.toLowerCase().includes(q) ||
-      c.originalTitle?.toLowerCase().includes(q) ||
-      c.description.toLowerCase().includes(q) ||
-      c.cast?.some((a: string) => a.toLowerCase().includes(q)) ||
-      c.director?.toLowerCase().includes(q)
-    );
-  });
+  const displayContents = useMemo(
+    () =>
+      filteredContents.filter((c: Content) => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase().trim();
+        return (
+          c.title.toLowerCase().includes(q) ||
+          c.originalTitle?.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.cast?.some((a: string) => a.toLowerCase().includes(q)) ||
+          c.director?.toLowerCase().includes(q)
+        );
+      }),
+    [filteredContents, searchQuery],
+  );
+
+  // 페이지네이션 적용
+  const {
+    visibleItems: paginatedContents,
+    hasMore,
+    loadMore,
+    totalCount,
+    visibleCount,
+  } = usePagination(displayContents, 24);
 
   return (
     <>
@@ -85,6 +99,11 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span>
                 {isLoading ? "불러오는 중..." : `${contents.length}개 콘텐츠`}
+                {isLoadingMore && (
+                  <span className="ml-1 text-primary-400 animate-pulse">
+                    + 추가 로딩 중...
+                  </span>
+                )}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -125,9 +144,13 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
           <div className="flex items-center justify-between mb-5">
             <p className="text-sm text-[var(--color-text-secondary)]">
               <span className="font-bold text-[var(--color-text)]">
-                {displayContents.length}
+                {totalCount}
               </span>
-              개의 콘텐츠
+              개 중{" "}
+              <span className="font-bold text-[var(--color-text)]">
+                {visibleCount}
+              </span>
+              개 표시
               {(activeFilterCount > 0 || searchQuery) && (
                 <span className="ml-1 text-primary-400">(필터 적용됨)</span>
               )}
@@ -146,15 +169,52 @@ export function HomePage({ searchQuery, onSearchChange }: HomePageProps) {
               ))}
             </div>
           ) : displayContents.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
-              {displayContents.map((content: Content) => (
-                <ContentCard
-                  key={content.id}
-                  content={content}
-                  onClick={() => setSelectedContent(content)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-5">
+                {paginatedContents.map((content: Content) => (
+                  <ContentCard
+                    key={content.id}
+                    content={content}
+                    onClick={() => setSelectedContent(content)}
+                  />
+                ))}
+              </div>
+
+              {/* 더보기 버튼 */}
+              {hasMore && (
+                <div className="flex justify-center mt-8 mb-4">
+                  <button
+                    onClick={loadMore}
+                    className="group relative inline-flex items-center gap-2 px-8 py-3
+                               rounded-2xl font-semibold text-sm
+                               border border-[var(--color-border)]
+                               bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)]
+                               text-[var(--color-text)]
+                               hover:border-primary-400 hover:shadow-lg hover:shadow-primary-500/10
+                               hover:scale-105 active:scale-95
+                               transition-all duration-300"
+                  >
+                    <svg
+                      className="w-4 h-4 text-primary-500 group-hover:translate-y-0.5 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                    <span>더보기</span>
+                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                      ({totalCount - visibleCount}개 남음)
+                    </span>
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="text-5xl mb-4">🎬</div>
