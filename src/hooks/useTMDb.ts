@@ -27,14 +27,14 @@ const PHASE1_OTTS: OttPlatform[] = ["netflix", "disney", "tving"];
 /** Phase 2: 보조 OTT (백그라운드 로딩) */
 const PHASE2_OTTS: OttPlatform[] = ["wavve", "coupang", "watcha"];
 
-/** 각 OTT당 fetch 할 페이지 수 */
+/** 각 OTT당 fetch 할 페이지 수 (1페이지 = ~20개) */
 const PAGES_MAP: Record<OttPlatform, number> = {
-  netflix: 3,
-  disney: 3,
-  tving: 3,
-  wavve: 2,
-  coupang: 2,
-  watcha: 2,
+  netflix: 5,
+  disney: 5,
+  tving: 5,
+  wavve: 4,
+  coupang: 4,
+  watcha: 4,
 };
 
 type FetchTask = {
