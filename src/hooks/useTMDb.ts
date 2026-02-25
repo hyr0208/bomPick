@@ -18,20 +18,100 @@ const OTT_PROVIDER_IDS: Record<OttPlatform, number> = {
 interface UseTMDbReturn {
   contents: Content[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
 }
 
+/** Phase 1: 주요 OTT (빠르게 먼저 로딩) */
+const PHASE1_OTTS: OttPlatform[] = ["netflix", "disney", "tving"];
+/** Phase 2: 보조 OTT (백그라운드 로딩) */
+const PHASE2_OTTS: OttPlatform[] = ["wavve", "coupang", "watcha"];
+
+/** 각 OTT당 fetch 할 페이지 수 */
+const PAGES_MAP: Record<OttPlatform, number> = {
+  netflix: 3,
+  disney: 3,
+  tving: 3,
+  wavve: 2,
+  coupang: 2,
+  watcha: 2,
+};
+
+type FetchTask = {
+  ott: OttPlatform;
+  providerId: number;
+  mediaType: "movie" | "tv";
+  page: number;
+};
+
+/** OTT 목록에 대한 fetch 작업 목록 생성 */
+function buildFetchTasks(otts: OttPlatform[]): FetchTask[] {
+  const tasks: FetchTask[] = [];
+  for (const ott of otts) {
+    const providerId = OTT_PROVIDER_IDS[ott];
+    const pages = PAGES_MAP[ott];
+    for (let page = 1; page <= pages; page++) {
+      tasks.push({ ott, providerId, mediaType: "movie", page });
+      tasks.push({ ott, providerId, mediaType: "tv", page });
+    }
+  }
+  return tasks;
+}
+
+/** 작업 목록을 실행하고, 결과를 contentMap에 병합 */
+async function executeFetchTasks(
+  tasks: FetchTask[],
+  contentMap: Map<string, Content>,
+): Promise<void> {
+  const results = await Promise.allSettled(
+    tasks.map((task) =>
+      task.mediaType === "movie"
+        ? discoverMovies(task.page, String(task.providerId))
+        : discoverTV(task.page, String(task.providerId)),
+    ),
+  );
+
+  results.forEach((result, index) => {
+    if (result.status !== "fulfilled") return;
+    const task = tasks[index];
+    const items = result.value.results;
+
+    items.forEach((item: TMDbMovie | TMDbTV) => {
+      const key = `${task.mediaType}-${item.id}`;
+      const existing = contentMap.get(key);
+
+      if (existing) {
+        if (!existing.ottPlatforms.includes(task.ott)) {
+          existing.ottPlatforms.push(task.ott);
+        }
+      } else {
+        const content =
+          task.mediaType === "movie"
+            ? transformMovie(item as TMDbMovie, [task.ott])
+            : transformTV(item as TMDbTV, [task.ott]);
+        contentMap.set(key, content);
+      }
+    });
+  });
+}
+
+/** contentMap을 인기도순 정렬된 배열로 변환 */
+function sortedContents(contentMap: Map<string, Content>): Content[] {
+  const arr = Array.from(contentMap.values());
+  arr.sort((a, b) => b.popularity - a.popularity);
+  return arr;
+}
+
 /**
- * 각 OTT 플랫폼별로 Discover API를 호출하여 한국에서
- * 실제 시청 가능한 콘텐츠를 최대한 많이 가져오는 훅.
+ * 2단계 로딩으로 콘텐츠를 가져오는 훅.
  *
- * - 넷플릭스, 디즈니+, 티빙: 영화 3p + TV 3p = 각 ~120개
- * - 웨이브, 쿠팡플레이, 왓챠: 영화 2p + TV 2p = 각 ~80개
- * - 중복 콘텐츠는 OTT 배지를 병합
+ * Phase 1: 넷플릭스, 디즈니+, 티빙 (주요 OTT) → 즉시 표시
+ * Phase 2: 웨이브, 쿠팡플레이, 왓챠 → 백그라운드 추가 로딩
  */
 export function useTMDb(): UseTMDbReturn {
   const [contents, setContents] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,90 +122,27 @@ export function useTMDb(): UseTMDbReturn {
         setIsLoading(true);
         setError(null);
 
-        // OTT별 (영화 + TV) 구분해서 fetch할 작업 목록 생성
-        const fetchTasks: Array<{
-          ott: OttPlatform;
-          providerId: number;
-          mediaType: "movie" | "tv";
-          page: number;
-        }> = [];
+        const contentMap = new Map<string, Content>();
 
-        // 대형 OTT: 3페이지, 소형 OTT: 2페이지
-        const pagesMap: Record<OttPlatform, number> = {
-          netflix: 3,
-          disney: 3,
-          tving: 3,
-          wavve: 2,
-          coupang: 2,
-          watcha: 2,
-        };
-
-        for (const [ott, providerId] of Object.entries(OTT_PROVIDER_IDS)) {
-          const pages = pagesMap[ott as OttPlatform];
-          for (let page = 1; page <= pages; page++) {
-            fetchTasks.push({
-              ott: ott as OttPlatform,
-              providerId,
-              mediaType: "movie",
-              page,
-            });
-            fetchTasks.push({
-              ott: ott as OttPlatform,
-              providerId,
-              mediaType: "tv",
-              page,
-            });
-          }
-        }
-
-        // 모든 API 호출 병렬 실행
-        const results = await Promise.allSettled(
-          fetchTasks.map((task) => {
-            if (task.mediaType === "movie") {
-              return discoverMovies(task.page, String(task.providerId));
-            } else {
-              return discoverTV(task.page, String(task.providerId));
-            }
-          }),
-        );
+        // ── Phase 1: 주요 OTT 먼저 로딩 ──
+        const phase1Tasks = buildFetchTasks(PHASE1_OTTS);
+        await executeFetchTasks(phase1Tasks, contentMap);
 
         if (cancelled) return;
 
-        // 결과를 Content로 변환하고 중복 병합
-        const contentMap = new Map<string, Content>();
+        // Phase 1 결과 즉시 표시
+        setContents(sortedContents(contentMap));
+        setIsLoading(false);
 
-        results.forEach((result, index) => {
-          if (result.status !== "fulfilled") return;
-          const task = fetchTasks[index];
-          const items = result.value.results;
+        // ── Phase 2: 보조 OTT 백그라운드 로딩 ──
+        setIsLoadingMore(true);
+        const phase2Tasks = buildFetchTasks(PHASE2_OTTS);
+        await executeFetchTasks(phase2Tasks, contentMap);
 
-          items.forEach((item: TMDbMovie | TMDbTV) => {
-            const key = `${task.mediaType}-${item.id}`;
-            const existing = contentMap.get(key);
+        if (cancelled) return;
 
-            if (existing) {
-              // 이미 있으면 OTT 플랫폼만 추가
-              if (!existing.ottPlatforms.includes(task.ott)) {
-                existing.ottPlatforms.push(task.ott);
-              }
-            } else {
-              // 새 콘텐츠 생성
-              let content: Content;
-              if (task.mediaType === "movie") {
-                content = transformMovie(item as TMDbMovie, [task.ott]);
-              } else {
-                content = transformTV(item as TMDbTV, [task.ott]);
-              }
-              contentMap.set(key, content);
-            }
-          });
-        });
-
-        // Map → Array, 인기도순 정렬
-        const allContents = Array.from(contentMap.values());
-        allContents.sort((a, b) => b.popularity - a.popularity);
-
-        setContents(allContents);
+        // Phase 2 결과 병합
+        setContents(sortedContents(contentMap));
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -137,6 +154,7 @@ export function useTMDb(): UseTMDbReturn {
       } finally {
         if (!cancelled) {
           setIsLoading(false);
+          setIsLoadingMore(false);
         }
       }
     }
@@ -148,5 +166,5 @@ export function useTMDb(): UseTMDbReturn {
     };
   }, []);
 
-  return { contents, isLoading, error };
+  return { contents, isLoading, isLoadingMore, error };
 }
